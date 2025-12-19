@@ -1,24 +1,27 @@
 from manim import *  # or: from manimlib import *
-
 from manim_slides import Slide
+import sys
 
-DEFAULT_FONT_SIZE = 22
-SMALL_FONT_SIZE = 18
-TITLE_FONT_SIZE = 42
-SUBTITLE_FONT_SIZE = 26
-TEXT_FONT = "CMU Sans Serif"
-Text.set_default(color=BLACK, font=TEXT_FONT, font_size=DEFAULT_FONT_SIZE)
-
-template = TexTemplate()
-template.add_to_preamble(r"\usepackage{cmbright}")
-
-Tex.set_default(color=BLACK, font_size=DEFAULT_FONT_SIZE)
-Tex.set_default(tex_template=template)
+sys.path.append(".")
+from src.common import *
 
 
 class Title(Slide):
+    def __init__(self):
+        super().__init__()
+        self.counter = 1
+
+    def update_slide_number(self):
+        self.counter += 1
+        old_slide_number = self.canvas["slide_number"]
+        new_slide_number = Text(f"{self.counter}").move_to(old_slide_number)
+        self.play(Transform(old_slide_number, new_slide_number))
+
     def construct(self):
         self.camera.background_color = WHITE
+        slide_number = Text(str(self.counter)).to_corner(DR)
+        self.add_to_canvas(slide_number=slide_number)
+        self.add(slide_number)
 
         logo_creatis = SVGMobject(
             "./assets/img/logo/creatis_quadri_logo.svg", height=0.4
@@ -45,11 +48,11 @@ class Title(Slide):
 
         title = Tex(
             r"Hybrid methods for computational imaging\\with applications to Poisson inverse problems",
-            font_size=TITLE_FONT_SIZE,
+            font_size=TITLE_FONTSIZE,
         )
         subtitle = Tex(
             "LP2I-Toulouse Seminar",
-            font_size=SUBTITLE_FONT_SIZE,
+            font_size=SUBTITLE_FONTSIZE,
         )
         date = Tex(
             "20/01/2025",
@@ -74,11 +77,11 @@ class Title(Slide):
         affiliations = VGroup(
             Tex(
                 r"\mbox{$^{1}$ INSA-Lyon, Université Claude Bernard Lyon 1, CNRS, Inserm, \textbf{CREATIS}, UMR 5220}",
-                font_size=SMALL_FONT_SIZE,
+                font_size=SMALL_FONTSIZE,
             ),
             Tex(
                 r"\mbox{$^{2}$ INSA-Lyon, Université Claude Bernard Lyon 1, CNRS, \textbf{Institut Camille Jordan}, UMR 5208}",
-                font_size=SMALL_FONT_SIZE,
+                font_size=SMALL_FONTSIZE,
             ),
         ).arrange(DOWN, buff=SMALL_BUFF, aligned_edge=LEFT)
 
@@ -93,7 +96,5 @@ class Title(Slide):
 
         # self.play(FadeIn(logos, text_column, affiliations))
         self.add(logos, text_column, affiliations)
-
-        self.wait()
-
-        # self.play(dot.animate.move_to(ORIGIN))
+        self.wait(0.1)
+        self.next_slide()
