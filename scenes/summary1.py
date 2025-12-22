@@ -6,7 +6,7 @@ sys.path.append(".")
 from src.common import *
 
 
-class Summary(Slide):
+class Summary1(Slide):
     def __init__(self):
         super().__init__()
         self.counter = 2

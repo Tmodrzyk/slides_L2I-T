@@ -326,8 +326,18 @@ class Section1(Slide):
 
         matrix_group = VGroup(matrix_label, matrix_squares)
 
+        slide2_title = (
+            Tex(
+                r"What does $A$ look like?",
+                font_size=SUBTITLE_FONTSIZE,
+                color=BLUE_CREATIS,
+            )
+            .align_to(SUBTITLE_POSITION, LEFT)
+            .align_to(SUBTITLE_POSITION, UP)
+        )
+
         # Animate
-        self.play(FadeIn(image_group))
+        self.play(Transform(slide_title, slide2_title), FadeIn(image_group))
         self.next_slide()
 
         self.play(FadeIn(kernel_group))
@@ -862,6 +872,257 @@ class Section1(Slide):
         self.update_slide_number()
 
         ################################################################################
-        # Slide 4: Ill-posedness
+        # Slide 4: Conditioning
         ################################################################################
         self.next_section(skip_animations=False)
+
+        slide4_title = (
+            Tex(
+                r"Why is this hard ?",
+                font_size=SUBTITLE_FONTSIZE,
+                color=BLUE_CREATIS,
+            )
+            .align_to(SUBTITLE_POSITION, LEFT)
+            .align_to(SUBTITLE_POSITION, UP)
+        )
+
+        self.play(Transform(slide_title, slide4_title))
+
+        svd = Tex("$A$ can be decomposed using Singular Value Decomposition (SVD):")
+        svd_eq = MathTex(r"A = U \Sigma V^{\top}", font_size=LARGE_FONTSIZE)
+        svd_group = (
+            VGroup(svd, svd_eq)
+            .arrange(DOWN, buff=MED_SMALL_BUFF)
+            .next_to(slide_title, DOWN, buff=MED_LARGE_BUFF)
+            .align_to(slide_title, LEFT)
+        )
+        svd_eq.set_x(0)
+
+        # Create Sigma matrix (diagonal)
+        sigma_matrix = Matrix(
+            [
+                [r"\sigma_0", "0", r"\cdots", "0"],
+                ["0", r"\sigma_1", r"\cdots", "0"],
+                [r"\vdots", r"\vdots", r"\ddots", r"\vdots"],
+                ["0", "0", r"\cdots", r"\sigma_{r-1}"],
+            ],
+            h_buff=MED_LARGE_BUFF,
+            v_buff=MED_LARGE_BUFF,
+            element_to_mobject=lambda m: MathTex(m, font_size=SMALL_FONTSIZE),
+            left_bracket="(",
+            right_bracket=")",
+        ).next_to(svd_eq, DOWN, buff=MED_LARGE_BUFF)
+
+        self.play(FadeIn(svd_group))
+        self.next_slide()
+
+        self.play(FadeIn(sigma_matrix))
+        self.next_slide()
+
+        inverse_svd = Tex("Let's assume we can invert $A$. Then:")
+        inverse_svd_eq = MathTex(
+            r"A^{-1} = V \Sigma^{-1} U^{\top}", font_size=LARGE_FONTSIZE
+        )
+        inverse_svd_group = (
+            VGroup(inverse_svd, inverse_svd_eq)
+            .arrange(DOWN, buff=MED_SMALL_BUFF)
+            .next_to(svd_eq, DOWN, buff=MED_LARGE_BUFF)
+            .align_to(slide_title, LEFT)
+        )
+        inverse_svd_eq.set_x(0)
+        self.play(FadeOut(sigma_matrix))
+        self.play(FadeIn(inverse_svd_group))
+        self.next_slide()
+
+        instability = (
+            Tex(
+                "$\\sigma_i$ very small $\\rightarrow$ $\\Sigma^{-1}$ contains very large values $\\rightarrow$ causes instability.",
+            )
+            .next_to(inverse_svd_group, DOWN, buff=LARGE_BUFF)
+            .align_to(slide_title, LEFT)
+        )
+
+        self.play(FadeIn(instability))
+        self.next_slide()
+
+        self.play(FadeOut(inverse_svd_group, instability, svd_group))
+
+        ################################################################################
+        # Slide 5: Ill-conditioning
+        ################################################################################
+        self.next_section(skip_animations=False)
+        self.update_slide_number()
+
+        condition_nb_def = VGroup(
+            Tex(
+                r"Let $A \in \mathbb{R}^{m \times n}$ and $\sigma_{0}, \dots, \sigma_{r-1}$ its singular values.",
+                font_size=DEFAULT_FONTSIZE,
+            ),
+            Tex(
+                r"The condition number of $A$ is defined as:",
+                font_size=DEFAULT_FONTSIZE,
+            ),
+            MathTex(
+                r"\kappa(A) = \frac{\sigma_{\max}}{\sigma_{\min}}",
+                font_size=DEFAULT_FONTSIZE,
+            ),
+            Tex(
+                r"with $\sigma_{\max}$ its largest singular value and $\sigma_{\min}$ its smallest non-zero singular value.",
+                font_size=DEFAULT_FONTSIZE,
+            ),
+        ).arrange(DOWN, aligned_edge=LEFT, buff=MED_SMALL_BUFF)
+        condition_nb_def[2].set_x(condition_nb_def.get_x())
+
+        defbox_contidition_nb = (
+            DefinitionBox(content=condition_nb_def, title="Condition Number")
+            .align_to(slide_title, LEFT)
+            .shift(0.5 * UP)
+        )
+
+        self.play(FadeIn(defbox_contidition_nb))
+        self.next_slide()
+
+        illcond = (
+            Tex(
+                "When $\\kappa(A)$ is large, $A$ is said to be \\bf{ill-conditioned}.",
+                font_size=LARGE_FONTSIZE,
+            )
+            .next_to(defbox_contidition_nb, DOWN, buff=MED_LARGE_BUFF)
+            .set_x(0)
+        )
+
+        self.play(FadeIn(illcond))
+        self.next_slide()
+
+        self.play(
+            FadeOut(defbox_contidition_nb),
+            illcond.animate.next_to(slide_title, DOWN, buff=MED_LARGE_BUFF).align_to(
+                slide_title, LEFT
+            ),
+        )
+
+        deconv = (
+            Tex("Deconvolution is ill-conditioned.", font_size=LARGE_FONTSIZE)
+            .next_to(illcond, DOWN, buff=MED_LARGE_BUFF)
+            .align_to(slide_title, LEFT)
+        )
+
+        img_deconv = (
+            ImageMobject("./assets/img/section1/slide4/moon-pseudoinverse.png")
+            .scale_to_fit_width(10)
+            .next_to(deconv, DOWN, buff=MED_LARGE_BUFF)
+            .set_x(0)
+        )
+
+        self.play(FadeIn(deconv, img_deconv))
+        self.next_slide()
+
+        tomo = (
+            Tex(
+                "Tomographic reconstruction is ill-conditioned.",
+                font_size=LARGE_FONTSIZE,
+            )
+            .next_to(illcond, DOWN, buff=MED_LARGE_BUFF)
+            .align_to(slide_title, LEFT)
+        )
+        img_tomo = (
+            ImageMobject("./assets/img/section1/slide4/tomo-pseudoinverse.png")
+            .scale_to_fit_width(10)
+            .move_to(img_deconv)
+        )
+        self.play(FadeOut(img_deconv), ReplacementTransform(deconv, tomo))
+        self.play(FadeIn(img_tomo))
+        self.next_slide()
+
+        self.update_slide_number()
+        self.play(FadeOut(tomo, img_tomo, illcond))
+
+        ################################################################################
+        # Slide 6: Modelisation
+        ################################################################################
+        self.next_section(skip_animations=False)
+        modelisation_title = (
+            Tex(
+                r"Variational formulation",
+                font_size=SUBTITLE_FONTSIZE,
+                color=BLUE_CREATIS,
+            )
+            .align_to(SUBTITLE_POSITION, LEFT)
+            .align_to(SUBTITLE_POSITION, UP)
+        )
+        self.play(Transform(slide_title, modelisation_title))
+
+        intro = (
+            Tex("We model the reconstruction problem as:")
+            .next_to(slide_title, DOWN, buff=MED_LARGE_BUFF)
+            .align_to(slide_title, LEFT)
+        )
+        eq_minimization = (
+            MathTex(
+                r"\hat{x} = \arg\min_{x} \| Ax - y \|^2_2",
+                font_size=LARGE_FONTSIZE,
+            )
+            .next_to(intro, DOWN, buff=LARGE_BUFF)
+            .set_x(0)
+        )
+        self.play(FadeIn(intro, eq_minimization))
+        self.next_slide()
+
+        eq_minimization_reg = (
+            MathTex(
+                r"\hat{x} = \arg\min_{x} \| Ax - y \|^2_2 + \lambda \mathcal{R}(x)",
+                font_size=LARGE_FONTSIZE,
+            )
+            .next_to(intro, DOWN, buff=LARGE_BUFF)
+            .set_x(0)
+        )
+        self.play(Transform(eq_minimization, eq_minimization_reg))
+        self.next_slide()
+
+        # Add braces under the equation terms
+        data_fidelity_brace = Brace(
+            eq_minimization_reg[0][10:16],  # ||Ax - y||_2^2 part
+            DOWN,
+            color=GREEN_SEABORN,
+        )
+        data_fidelity_label = data_fidelity_brace.get_tex(
+            "\\text{data-fidelity}"
+        ).set_color(GREEN_SEABORN)
+
+        regularization_brace = Brace(
+            eq_minimization_reg[0][19:], UP, color=ORANGE_SEABORN  # R(x) part
+        )
+        regularization_label = regularization_brace.get_tex(
+            "\\text{regularization}"
+        ).set_color(ORANGE_SEABORN)
+
+        self.play(
+            FadeIn(data_fidelity_brace, data_fidelity_label),
+            FadeIn(regularization_brace, regularization_label),
+        )
+        self.next_slide()
+
+        neg_log_likelihood_label = data_fidelity_brace.get_tex(
+            "\\text{negative log likelihood}"
+        ).set_color(GREEN_SEABORN)
+        prior_label = regularization_brace.get_tex("\\text{prior}   ").set_color(
+            ORANGE_SEABORN
+        )
+
+        self.play(
+            Transform(data_fidelity_label, neg_log_likelihood_label),
+            Transform(regularization_label, prior_label),
+        )
+        self.next_slide()
+        self.play(
+            FadeOut(
+                eq_minimization_reg,
+                intro,
+                data_fidelity_brace,
+                data_fidelity_label,
+                regularization_brace,
+                regularization_label,
+            )
+        )
+
+        self.wait()
